@@ -1,0 +1,116 @@
+erDiagram
+  USERS ||--|| ARTIST_PROFILE : has
+  USERS ||--o{ INVITES : invited_by
+  USERS ||--o{ ARTWORKS : owns
+  USERS ||--o{ ARTIST_MARGINS : sets
+  USERS ||--o{ ARCHIVE_ITEMS : archives
+  USERS ||--|| PAYMENTS_BANK : bank
+  USERS ||--o{ AUDIT_LOG : actor
+
+  CATEGORIES ||--o{ ARTIST_MARGINS : has
+  CATEGORIES ||--o{ ARTWORK_CATEGORY_TOGGLE : toggles
+
+  ARTWORKS ||--o{ ARTWORK_CATEGORY_TOGGLE : has
+  ARTWORKS ||--o{ ARCHIVE_ITEMS : archived_as
+
+  USERS {
+    uuid id PK
+    text name
+    text email UK
+    enum user_role role
+    enum user_status status
+    timestamptz created_at
+  }
+
+  INVITES {
+    text email PK
+    uuid invited_by_admin_id FK
+    enum invite_status status
+    timestamptz created_at
+    timestamptz used_at
+  }
+
+  ARTIST_PROFILE {
+    uuid user_id PK, FK
+    text pronouns
+    text location
+    text phone
+    text profile_picture_url
+    int artwork_cap
+  }
+
+  TERMS_ACCEPTANCE_AUDIT {
+    bigserial id PK
+    uuid user_id FK
+    text terms_version
+    timestamptz accepted_at
+    inet ip_address
+  }
+
+  CATEGORIES {
+    bigserial id PK
+    text label UK
+    numeric base_price
+    numeric default_margin
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  ARTWORKS {
+    uuid id PK
+    uuid artist_id FK
+    text title
+    text notes_internal
+    text file_url
+    boolean is_active
+    timestamptz created_at
+    timestamptz updated_at
+  }
+
+  ARTIST_MARGINS {
+    uuid artist_id PK, FK
+    bigint category_id PK, FK
+    numeric margin_value
+    boolean is_custom
+  }
+
+  ARTWORK_CATEGORY_TOGGLE {
+    uuid artwork_id PK, FK
+    bigint category_id PK, FK
+    boolean is_enabled
+  }
+
+  ARCHIVE_ITEMS {
+    bigserial id PK
+    uuid artist_id FK
+    uuid artwork_id FK
+    text file_url
+    enum archive_reason reason
+    timestamptz archived_at
+  }
+
+  PAYMENTS_BANK {
+    uuid artist_id PK, FK
+    text account_holder
+    text account_number
+    text ifsc
+    text bank_name
+    text account_type
+    text pan
+    text gstin
+    text phone
+    timestamptz updated_at
+  }
+
+  AUDIT_LOG {
+    bigserial id PK
+    uuid actor_id FK
+    text action
+    text target_type
+    text target_id
+    jsonb metadata
+    timestamptz occurred_at
+  }
+
+
