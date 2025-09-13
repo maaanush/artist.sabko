@@ -8,9 +8,10 @@ type ProfileAvatarPickerProps = {
   className?: string
   'aria-label'?: string
   onChange?: (storagePath: string) => void
+  initialPath?: string | null
 }
 
-export function ProfileAvatarPicker({ size = 140, className, onChange, ...rest }: ProfileAvatarPickerProps) {
+export function ProfileAvatarPicker({ size = 140, className, onChange, initialPath, ...rest }: ProfileAvatarPickerProps) {
   const [userId, setUserId] = useState<string | null>(null)
   const [avatarPath, setAvatarPath] = useState<string | null>(null)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
@@ -38,21 +39,25 @@ export function ProfileAvatarPicker({ size = 140, className, onChange, ...rest }
       if (error || !data.user) return
       const uid = data.user.id
       setUserId(uid)
-      // Use cached path immediately for fast first paint
+      // Use provided initial path immediately, else use cached path
       const cached = readStoredAvatar(uid)
-      if (cached) setAvatarPath(cached)
-      const { data: prof } = await supabase
-        .from('profiles')
-        .select('avatar_url')
-        .eq('id', uid)
-        .maybeSingle()
-      const dbPath = (prof as any)?.avatar_url ?? null
-      if (dbPath) {
-        setAvatarPath(dbPath)
-        if (dbPath !== cached) writeStoredAvatar(uid, dbPath)
+      const initial = initialPath ?? cached
+      if (initial) setAvatarPath(initial)
+      // If initial not provided, fetch from DB once
+      if (!initial) {
+        const { data: prof } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', uid)
+          .maybeSingle()
+        const dbPath = (prof as any)?.avatar_url ?? null
+        if (dbPath) {
+          setAvatarPath(dbPath)
+          if (dbPath !== cached) writeStoredAvatar(uid, dbPath)
+        }
       }
     })
-  }, [])
+  }, [initialPath])
 
   function onAvatarClick() {
     fileInputRef.current?.click()
