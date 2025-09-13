@@ -1,0 +1,5 @@
+regex:sb_secret_[A-Za-z0-9_\-]+==>REDACTED
+regex:eyJ[a-zA-Z0-9._-]{20,}==>REDACTED
+regex:(?i)SERVICE_ROLE_KEY\s*=\s*[^\s\n]+==>SERVICE_ROLE_KEY=REDACTED
+regex:(?i)VITE_SUPABASE_ANON_KEY\s*=\s*[^\s\n]+==>VITE_SUPABASE_ANON_KEY=REDACTED
+regex:(?i)ANON_KEY\s*=\s*[^\s\n]+==>ANON_KEY=REDACTED

@@ -3,11 +3,30 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabaseClient'
 import { ProfileAvatarPicker } from '@/components/ProfileAvatarPicker'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 
 export default function Dashboard() {
   const navigate = useNavigate()
   const [name, setName] = useState<string | null>(null)
   const [location, setLocation] = useState<string | null>(null)
+  const [showEdit, setShowEdit] = useState<boolean>(false)
+
+  // Edit form state
+  const [editName, setEditName] = useState<string>('')
+  const [editPhone, setEditPhone] = useState<string>('')
+  const [editLocation, setEditLocation] = useState<string>('')
+  const [editPronoun, setEditPronoun] = useState<string>('')
+  const [editBio, setEditBio] = useState<string>('')
+  const [addressLine1, setAddressLine1] = useState<string>('')
+  const [addressLine2, setAddressLine2] = useState<string>('')
+  const [addressCity, setAddressCity] = useState<string>('')
+  const [addressState, setAddressState] = useState<string>('')
+  const [addressPostalCode, setAddressPostalCode] = useState<string>('')
+  const [addressCountry, setAddressCountry] = useState<string>('')
+  const [saving, setSaving] = useState<boolean>(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
@@ -33,8 +52,87 @@ export default function Dashboard() {
     })
   }, [navigate])
 
-  function handleEditProfile() {
-    // Placeholder: will implement later
+  async function handleEditProfile() {
+    setError(null)
+    // Load current profile into form and open dialog
+    const { data: userRes } = await supabase.auth.getUser()
+    const userId = userRes.user?.id
+    if (!userId) return
+    const { data: prof } = await supabase
+      .from('profiles')
+      .select(
+        [
+          'name',
+          'phone',
+          'location',
+          'pronoun',
+          'bio',
+          'address_line1',
+          'address_line2',
+          'address_city',
+          'address_state',
+          'address_postal_code',
+          'address_country',
+        ].join(', ')
+      )
+      .eq('id', userId)
+      .maybeSingle()
+    const p = (prof as any) || {}
+    setEditName(p.name ?? '')
+    setEditPhone(p.phone ?? '')
+    setEditLocation(p.location ?? '')
+    setEditPronoun(p.pronoun ?? '')
+    setEditBio(p.bio ?? '')
+    setAddressLine1(p.address_line1 ?? '')
+    setAddressLine2(p.address_line2 ?? '')
+    setAddressCity(p.address_city ?? '')
+    setAddressState(p.address_state ?? '')
+    setAddressPostalCode(p.address_postal_code ?? '')
+    setAddressCountry(p.address_country ?? '')
+    setShowEdit(true)
+  }
+
+  async function handleSaveProfile() {
+    setSaving(true)
+    setError(null)
+    try {
+      const { data: userRes, error: userErr } = await supabase.auth.getUser()
+      if (userErr) throw userErr
+      const userId = userRes.user?.id
+      if (!userId) throw new Error('Not authenticated')
+
+      const { error: updateErr } = await supabase
+        .from('profiles')
+        .update({
+          name: editName || null,
+          phone: editPhone || null,
+          location: editLocation || null,
+          pronoun: editPronoun || null,
+          bio: editBio || null,
+          address_line1: addressLine1 || null,
+          address_line2: addressLine2 || null,
+          address_city: addressCity || null,
+          address_state: addressState || null,
+          address_postal_code: addressPostalCode || null,
+          address_country: addressCountry || null,
+        })
+        .eq('id', userId)
+      if (updateErr) throw updateErr
+
+      // Reflect updated values on the dashboard
+      setName(editName || null)
+      setLocation(editLocation || null)
+      setShowEdit(false)
+    } catch (e: any) {
+      setError(e.message ?? 'Failed to save profile')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  function handleCloseDialog() {
+    if (saving) return
+    setShowEdit(false)
   }
 
   function handleUpload() {
@@ -67,6 +165,94 @@ export default function Dashboard() {
           Sign out
         </Button>
       </div>
+
+      {showEdit && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          className="fixed inset-0 z-50 flex items-center justify-center"
+        >
+          <div className="absolute inset-0 bg-black/50" onClick={handleCloseDialog} />
+          <div className="relative z-10 w-full flex justify-center px-2">
+            <Card className="w-[98%] max-w-[480px] max-h-[80vh] flex flex-col overflow-hidden">
+              {/* Dialog header */}
+              <CardHeader>
+                <CardTitle>Edit profile</CardTitle>
+              </CardHeader>
+              {/* Dialog body (scrollable) */}
+              <CardContent className="flex-1 overflow-y-auto">
+                <div className="grid gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit_name">Name</Label>
+                    <Input id="edit_name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit_phone">Phone</Label>
+                    <Input id="edit_phone" value={editPhone} onChange={(e) => setEditPhone(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit_location">Location</Label>
+                    <Input id="edit_location" value={editLocation} onChange={(e) => setEditLocation(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit_pronoun">Pronoun</Label>
+                    <Input id="edit_pronoun" value={editPronoun} onChange={(e) => setEditPronoun(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="edit_bio">Bio</Label>
+                    <textarea
+                      id="edit_bio"
+                      value={editBio}
+                      onChange={(e) => setEditBio(e.target.value)}
+                      className="flex min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor="addr1">Address line 1</Label>
+                    <Input id="addr1" value={addressLine1} onChange={(e) => setAddressLine1(e.target.value)} />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="addr2">Address line 2 (optional)</Label>
+                    <Input id="addr2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="city">City</Label>
+                      <Input id="city" value={addressCity} onChange={(e) => setAddressCity(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="state">State/Province</Label>
+                      <Input id="state" value={addressState} onChange={(e) => setAddressState(e.target.value)} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="postal">Postal code</Label>
+                      <Input id="postal" value={addressPostalCode} onChange={(e) => setAddressPostalCode(e.target.value)} />
+                    </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="country">Country</Label>
+                      <Input id="country" value={addressCountry} onChange={(e) => setAddressCountry(e.target.value)} />
+                    </div>
+                  </div>
+
+                  {error && <p className="text-sm text-destructive">{error}</p>}
+                </div>
+              </CardContent>
+              {/* Dialog footer */}
+              <CardFooter className="justify-end gap-2">
+                <Button variant="secondary" onClick={handleCloseDialog} disabled={saving} aria-label="Cancel">
+                  Cancel
+                </Button>
+                <Button onClick={handleSaveProfile} disabled={saving} aria-label="Save profile">
+                  {saving ? 'Saving…' : 'Save'}
+                </Button>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

@@ -1,69 +1,46 @@
-# React + TypeScript + Vite
+# Artist of Sabko
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## Environment setup
 
-Currently, two official plugins are available:
+1. Copy `env.example` to `.env` and fill values.
+2. Install deps: `npm install`
+3. Run the app: `npm run dev`
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+### Required variables
 
-## Expanding the ESLint configuration
+- `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+- Edge Functions: `PROJECT_URL`, `ANON_KEY`, `SERVICE_ROLE_KEY`, optional `APP_ORIGIN`
+- EmailJS (optional): `EMAILJS_SERVICE_ID`, `EMAILJS_TEMPLATE_ID`, `EMAILJS_PUBLIC_KEY`, `EMAILJS_SECRET`
+- Admin bootstrap: `SUPABASE_URL`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+## Supabase function secrets
 
-```js
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+After `.env` is set, run:
 
-      // Remove tseslint.configs.recommended and replace with this
-      ...tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      ...tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      ...tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run sb:secrets
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Deploy functions:
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm run sb:deploy:functions
 ```
+
+## Secret rotation playbook (Service Role exposure)
+
+1. Regenerate the Service Role key in Supabase Dashboard → Settings → API.
+2. Update local `.env` and re-run `npm run sb:secrets`.
+3. Redeploy functions: `npm run sb:deploy:functions`.
+4. Rewrite Git history to purge the leaked value (BFG or git-filter-repo).
+   - BFG example:
+     - `brew install bfg`
+     - Create `replacements.txt` containing the exact leaked key
+     - `bfg --replace-text replacements.txt`
+     - `git push --force --prune origin main`
+5. Review Supabase logs for suspicious activity.
+
+## Notes
+
+- Never use `SERVICE_ROLE_KEY` in frontend code.
+- `.env*` files are git-ignored; only commit `env.example`.

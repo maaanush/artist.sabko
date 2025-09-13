@@ -12,6 +12,12 @@ export default function OnboardingProfile() {
   const [location, setLocation] = useState<string>('')
   const [bio, setBio] = useState<string>('')
   const [pronoun, setPronoun] = useState<string>('')
+  const [addressLine1, setAddressLine1] = useState<string>('')
+  const [addressLine2, setAddressLine2] = useState<string>('')
+  const [addressCity, setAddressCity] = useState<string>('')
+  const [addressState, setAddressState] = useState<string>('')
+  const [addressPostalCode, setAddressPostalCode] = useState<string>('')
+  const [addressCountry, setAddressCountry] = useState<string>('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null)
   const [saving, setSaving] = useState<boolean>(false)
@@ -90,7 +96,19 @@ export default function OnboardingProfile() {
       // Persist profile fields (storing storage path in avatar_url) and mark step2 done
       const { error: upsertErr } = await supabase
         .from('profiles')
-        .update({ avatar_url: path, location, bio, pronoun, onboarding_step2_done: true })
+        .update({
+          avatar_url: path,
+          location,
+          bio,
+          pronoun,
+          address_line1: addressLine1 || null,
+          address_line2: addressLine2 || null,
+          address_city: addressCity || null,
+          address_state: addressState || null,
+          address_postal_code: addressPostalCode || null,
+          address_country: addressCountry || null,
+          onboarding_step2_done: true,
+        })
         .eq('id', userId)
       if (upsertErr) throw upsertErr
 
@@ -147,6 +165,70 @@ export default function OnboardingProfile() {
                   onChange={(e) => setBio(e.target.value)}
                   className="flex min-h-28 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
                 />
+              </div>
+
+              <div className="grid gap-4">
+                <div>
+                  <Label>Address (optional)</Label>
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="address_line1">Address line 1</Label>
+                  <Input
+                    id="address_line1"
+                    placeholder="Apartment, suite, building"
+                    value={addressLine1}
+                    onChange={(e) => setAddressLine1(e.target.value)}
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="address_line2">Address line 2 (optional)</Label>
+                  <Input
+                    id="address_line2"
+                    placeholder="Floor, landmark"
+                    value={addressLine2}
+                    onChange={(e) => setAddressLine2(e.target.value)}
+                  />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="address_city">City</Label>
+                    <Input
+                      id="address_city"
+                      placeholder="City"
+                      value={addressCity}
+                      onChange={(e) => setAddressCity(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="address_state">State/Province</Label>
+                    <Input
+                      id="address_state"
+                      placeholder="State or province"
+                      value={addressState}
+                      onChange={(e) => setAddressState(e.target.value)}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="grid gap-2">
+                    <Label htmlFor="address_postal_code">Postal code</Label>
+                    <Input
+                      id="address_postal_code"
+                      placeholder="Postal code"
+                      value={addressPostalCode}
+                      onChange={(e) => setAddressPostalCode(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="address_country">Country</Label>
+                    <Input
+                      id="address_country"
+                      placeholder="Country"
+                      value={addressCountry}
+                      onChange={(e) => setAddressCountry(e.target.value)}
+                    />
+                  </div>
+                </div>
               </div>
 
               {error && (

@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "sb:link": "supabase link --project-ref $SUPABASE_PROJECT_REF",
+    "sb:secrets": "scripts/set-supabase-secrets.sh",
+    "sb:deploy:functions": "supabase functions deploy pre-signup consume-invite send-invite"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
