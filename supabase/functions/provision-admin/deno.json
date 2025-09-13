@@ -1,0 +1,7 @@
+{
+  "deploy": {
+    "verifyJwt": false
+  }
+}
+
+
