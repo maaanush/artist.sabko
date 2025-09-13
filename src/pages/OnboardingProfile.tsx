@@ -14,10 +14,7 @@ export default function OnboardingProfile() {
   const [pronoun, setPronoun] = useState<string>('')
   const [addressLine1, setAddressLine1] = useState<string>('')
   const [addressLine2, setAddressLine2] = useState<string>('')
-  const [addressCity, setAddressCity] = useState<string>('')
-  const [addressState, setAddressState] = useState<string>('')
-  const [addressPostalCode, setAddressPostalCode] = useState<string>('')
-  const [addressCountry, setAddressCountry] = useState<string>('')
+  const [addressPincode, setAddressPincode] = useState<string>('')
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [avatarBlob, setAvatarBlob] = useState<Blob | null>(null)
   const [saving, setSaving] = useState<boolean>(false)
@@ -103,10 +100,7 @@ export default function OnboardingProfile() {
           pronoun,
           address_line1: addressLine1 || null,
           address_line2: addressLine2 || null,
-          address_city: addressCity || null,
-          address_state: addressState || null,
-          address_postal_code: addressPostalCode || null,
-          address_country: addressCountry || null,
+          address_pincode: addressPincode || null,
           onboarding_step2_done: true,
         })
         .eq('id', userId)
@@ -189,45 +183,14 @@ export default function OnboardingProfile() {
                     onChange={(e) => setAddressLine2(e.target.value)}
                   />
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="address_city">City</Label>
-                    <Input
-                      id="address_city"
-                      placeholder="City"
-                      value={addressCity}
-                      onChange={(e) => setAddressCity(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="address_state">State/Province</Label>
-                    <Input
-                      id="address_state"
-                      placeholder="State or province"
-                      value={addressState}
-                      onChange={(e) => setAddressState(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="address_postal_code">Postal code</Label>
-                    <Input
-                      id="address_postal_code"
-                      placeholder="Postal code"
-                      value={addressPostalCode}
-                      onChange={(e) => setAddressPostalCode(e.target.value)}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="address_country">Country</Label>
-                    <Input
-                      id="address_country"
-                      placeholder="Country"
-                      value={addressCountry}
-                      onChange={(e) => setAddressCountry(e.target.value)}
-                    />
-                  </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="address_pincode">Pincode</Label>
+                  <Input
+                    id="address_pincode"
+                    placeholder="Pincode"
+                    value={addressPincode}
+                    onChange={(e) => setAddressPincode(e.target.value)}
+                  />
                 </div>
               </div>
 

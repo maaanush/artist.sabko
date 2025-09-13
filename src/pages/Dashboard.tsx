@@ -21,10 +21,7 @@ export default function Dashboard() {
   const [editBio, setEditBio] = useState<string>('')
   const [addressLine1, setAddressLine1] = useState<string>('')
   const [addressLine2, setAddressLine2] = useState<string>('')
-  const [addressCity, setAddressCity] = useState<string>('')
-  const [addressState, setAddressState] = useState<string>('')
-  const [addressPostalCode, setAddressPostalCode] = useState<string>('')
-  const [addressCountry, setAddressCountry] = useState<string>('')
+  const [addressPincode, setAddressPincode] = useState<string>('')
   const [saving, setSaving] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -58,25 +55,15 @@ export default function Dashboard() {
     const { data: userRes } = await supabase.auth.getUser()
     const userId = userRes.user?.id
     if (!userId) return
-    const { data: prof } = await supabase
+    const { data: prof, error: fetchErr } = await supabase
       .from('profiles')
-      .select(
-        [
-          'name',
-          'phone',
-          'location',
-          'pronoun',
-          'bio',
-          'address_line1',
-          'address_line2',
-          'address_city',
-          'address_state',
-          'address_postal_code',
-          'address_country',
-        ].join(', ')
-      )
+      .select('*')
       .eq('id', userId)
       .maybeSingle()
+    if (fetchErr) {
+      console.error('EditProfile fetch error', fetchErr)
+    }
+    console.log('EditProfile fetched profile', prof)
     const p = (prof as any) || {}
     setEditName(p.name ?? '')
     setEditPhone(p.phone ?? '')
@@ -85,10 +72,7 @@ export default function Dashboard() {
     setEditBio(p.bio ?? '')
     setAddressLine1(p.address_line1 ?? '')
     setAddressLine2(p.address_line2 ?? '')
-    setAddressCity(p.address_city ?? '')
-    setAddressState(p.address_state ?? '')
-    setAddressPostalCode(p.address_postal_code ?? '')
-    setAddressCountry(p.address_country ?? '')
+    setAddressPincode(p.address_pincode ?? '')
     setShowEdit(true)
   }
 
@@ -111,10 +95,7 @@ export default function Dashboard() {
           bio: editBio || null,
           address_line1: addressLine1 || null,
           address_line2: addressLine2 || null,
-          address_city: addressCity || null,
-          address_state: addressState || null,
-          address_postal_code: addressPostalCode || null,
-          address_country: addressCountry || null,
+          address_pincode: addressPincode || null,
         })
         .eq('id', userId)
       if (updateErr) throw updateErr
@@ -216,25 +197,9 @@ export default function Dashboard() {
                     <Label htmlFor="addr2">Address line 2 (optional)</Label>
                     <Input id="addr2" value={addressLine2} onChange={(e) => setAddressLine2(e.target.value)} />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="city">City</Label>
-                      <Input id="city" value={addressCity} onChange={(e) => setAddressCity(e.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="state">State/Province</Label>
-                      <Input id="state" value={addressState} onChange={(e) => setAddressState(e.target.value)} />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="postal">Postal code</Label>
-                      <Input id="postal" value={addressPostalCode} onChange={(e) => setAddressPostalCode(e.target.value)} />
-                    </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input id="country" value={addressCountry} onChange={(e) => setAddressCountry(e.target.value)} />
-                    </div>
+                  <div className="grid gap-2">
+                    <Label htmlFor="pincode">Pincode</Label>
+                    <Input id="pincode" value={addressPincode} onChange={(e) => setAddressPincode(e.target.value)} />
                   </div>
 
                   {error && <p className="text-sm text-destructive">{error}</p>}
